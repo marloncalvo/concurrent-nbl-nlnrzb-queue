@@ -28,26 +28,20 @@ public:
 
 template<typename T>
 void vector<T>::push_back(T item) {
-	MRLock<Bitset> test(100);
 	Bitset * res = new Bitset();
 	uint32_t index = indx.load();
 
-	res->Resize(UINT32_MAX);
+	res->Resize(100);
 	res->Set(index);
 
-	std::cout << "Acquiring Lock" << std::endl;
-	uint32_t pos = test.Lock(*res);
-	std::cout << pos << std::endl;
-	std::cout << "Acquired Lock" << std::endl;
+	uint32_t pos = lock.Lock(*res);
 	arr[index] = item;
 	indx.store(index+1);
-	std::cout << "Stored." << std::endl;
-	test.Unlock(pos);
-	std::cout << "Done." << std::endl;
+	lock.Unlock(pos);
 }
 
 template<typename T>
-vector<T>::vector(uint32_t size): max_size(size), indx(0), lock(UINT32_MAX) {
+vector<T>::vector(uint32_t size): max_size(size), indx(0), lock(100) {
 	arr = (T*)malloc(sizeof(T) * size);
 }
 
