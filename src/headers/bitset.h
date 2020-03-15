@@ -107,6 +107,10 @@ public:
         }
     }
 
+    inline bool Read(int pos) {
+        return READ_BIT(m_bits, pos);
+    }
+
 private:
     int m_size;
     int m_words;
