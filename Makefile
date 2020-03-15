@@ -3,12 +3,15 @@ CFLAGS = -g -Wall
 
 HEADERS = src/headers
 
-TARGET = naive_vector_test
+TARGET = naive_vector mrlock_vector
 
-all: $(TARGET)
+all: clean naive_test mrlock_test
 
-$(TARGET): tests/$(TARGET).cc
-	$(CXX) $(CFLAGS) -o $(TARGET) tests/$(TARGET).cc -I $(HEADERS)
+naive_test: clean
+	$(CXX) -pthread -I $(HEADERS) -g tests/naive_vector_test.cc -o naive_test
+
+mrlock_test: clean
+	$(CXX) -pthread -I $(HEADERS) -g tests/mrlock_vector_test.cc -o mrlock_test
 
 clean:
 	$(RM) $(TARGET)
