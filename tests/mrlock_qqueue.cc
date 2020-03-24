@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <pthread.h>
-#include "../src/headers/mrlock_qqueue.h"
+#include "mrlock_qqueue.h"
 
 #define N 10000000
 #define N_T 4
@@ -28,6 +28,9 @@ public:
     std::vector<test> tests;
 };
 
+/**
+ * Runs all the preinitialized tests one by one, which optional debug statements.
+ */
 void* foo(void* _benchmarks) {
 
     benchmark b = *reinterpret_cast<benchmark*>(_benchmarks);
@@ -71,6 +74,9 @@ int main(void) {
 	pthread_t threads[N_T];
     benchmark benchmarks[N_T];
 
+    /**
+     * This generates all the tests
+     */
     for (int i = 0; i < N; i++) {
         test t;
         if((rand() % 100) < 50) {
