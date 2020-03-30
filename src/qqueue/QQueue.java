@@ -114,13 +114,15 @@ class QQueue {
             return false;
         }
 
-        if (cur.nexts.isEmpty()) {
-            elem.prev.set(cur);
-            cur.nexts.add(elem);
-            tail.set(index, elem);
+        if(cur.desc.compareAndSet(curDesc, d)) {
+            if (cur.nexts.isEmpty()) {
+                elem.prev.set(cur);
+                cur.nexts.add(elem);
+                tail.set(index, elem);
 
-            d.active.set(false);
-            return true;
+                d.active.set(false);
+                return true;
+            }
         }
 
         return false;
@@ -146,24 +148,25 @@ class QQueue {
                     //       c -> d
                     prev.nexts.addAll(cur.nexts);
                     // {a} -> c -> d
-                    prev.nexts.remove(index);
+                    prev.nexts.set(index, null);
 
                     prev.desc.get().active.set(false);
+                    break;
                 }
-
-                // Since no other thread can enter a, or b, they cant update its lists.
-
-                int tIndex = tail.indexOf(cur);
-                if (tIndex != -1) {
-                    tail.set(tIndex, prev);
-                }
-
-                d.active.set(false);
-
-                d.adr.value = cur.value;
-
-                return true;
             }
+
+            // Since no other thread can enter a, or b, they cant update its lists.
+
+            int tIndex = tail.indexOf(cur);
+            if (tIndex != -1) {
+                tail.set(tIndex, prev);
+            }
+
+            d.active.set(false);
+
+            d.adr.value = cur.value;
+
+            return true;
         }
 
         return false;

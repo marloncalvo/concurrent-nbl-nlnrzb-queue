@@ -27,7 +27,7 @@ public class Main {
         }
     }
 
-    private final static int N = 3;
+    private final static int N = 10;
     public static void main(String [] args) throws Exception {
         QQueue q = new QQueue();
         ArrayList<Thread> threads = new ArrayList<>();
