@@ -4,7 +4,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.company.Op.*;
+import static qqueue.Op.*;
 
 class Node {
 
