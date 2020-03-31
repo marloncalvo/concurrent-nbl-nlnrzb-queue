@@ -1,5 +1,7 @@
 package qqueue;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class MutableInt {
-    public int value;
+    public final AtomicInteger value = new AtomicInteger();
 }

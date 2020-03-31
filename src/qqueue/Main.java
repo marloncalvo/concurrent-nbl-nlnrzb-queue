@@ -15,15 +15,15 @@ public class Main {
         @Override
         public void run() {
             try {
-                for (int i = 0; i < 4; i++) {
-                    if (i % 2== 0) {
-                        this.q.queue(k);
-                        System.out.println(Thread.currentThread().getName() + "- push():"+k);
+                MutableInt v = new MutableInt();
+                for (int i = 0; i < 10000; i++) {
+                    if (i > 5000) {
+                        this.q.queue(i);
+                        System.out.println(Thread.currentThread().getName() + "- push():"+v.value);
                     }
                     else {
-                        MutableInt v = new MutableInt();
                         this.q.dequeue(v);
-                        System.out.println(Thread.currentThread().getName() + "- pop():"+v.value);
+                        System.out.println(Thread.currentThread().getName() + "- pop():"+k);
                     }
                 }
             } catch (Exception e) {
@@ -32,7 +32,7 @@ public class Main {
         }
     }
 
-    private final static int N = 5;
+    private final static int N = 32;
     public static void main(String [] args) throws Exception {
         QQueue q = new QQueue();
         ArrayList<Thread> threads = new ArrayList<>();

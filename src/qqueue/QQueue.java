@@ -10,6 +10,7 @@ class Node {
 
     private static final int INVALID = -1;
 
+    final MutableInt adr;
     final int value;
     final Op op;
     final Vector<Node> nexts;
@@ -17,6 +18,7 @@ class Node {
     final AtomicReference<Desc> desc;
 
     public Node(Op op) {
+        this.adr = null;
         this.value = INVALID;
         this.op = op;
         this.nexts = new Vector<>(100);
@@ -25,14 +27,16 @@ class Node {
     }
 
     public Node(int value, Op op) {
+        this.adr = null;
         this.value = value;
         this.op = op;
         this.nexts = new Vector<>(100);
         this.prev = new AtomicReference<>(null);
-        this.desc = new AtomicReference<>(new Desc(null, op));
+        this.desc = new AtomicReference<>(new Desc(value, op));
     }
 
     public Node(MutableInt adr, Op op) {
+        this.adr = adr;
         this.value = INVALID;
         this.op = op;
         this.nexts = new Vector<>(100);
@@ -42,13 +46,22 @@ class Node {
 }
 
 class Desc {
+    final int value;
     final MutableInt adr;
     final Op op;
     final AtomicBoolean active;
 
     public Desc(MutableInt adr, Op op) {
+        this.value = -2222;
         this.adr = adr;
         this.op = op;
+        active = new AtomicBoolean(true);
+    }
+
+    public Desc(int value, Op op) {
+        this.value = value;
+        this.op = op;
+        this.adr = null;
         active = new AtomicBoolean(true);
     }
 
@@ -76,12 +89,22 @@ class QQueue {
         while (true) {
             loops++;
             int index = getRandomIndex();
-            Node cur = tail.get(index);
-            if (cur == null) {
+
+            Desc d = new Desc(v, PUSH);
+            elem.desc.set(d);
+
+            try {
+                Node cur = tail.get(index);
+                if (cur.op == POP) {
+                    index = getRandomIndex();
+                    cur   = head.nexts.get(index);
+                    ret   = remove(cur, index, d);
+                } else {
+                    ret = insert(cur, elem, index, d);
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
                 continue;
             }
-
-            ret = insert(cur, elem, index);
 
             if (ret) {
                 break;
@@ -96,9 +119,26 @@ class QQueue {
         while (true) {
             loops++;
             int index = getRandomIndex();
-            Node cur = head.nexts.get(index);
 
-            ret = remove(cur, index, elem.desc.get());
+            Desc d = new Desc(adr, POP);
+            elem.desc.set(d);
+
+            try {
+                Node cur = head.nexts.get(index);
+                if (cur.op == PUSH) {
+                    ret = remove(cur, index, d);
+                } else {
+                    index = getRandomIndex();
+                    cur   = tail.get(index);
+                    ret = insert(cur, elem, index, d);
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                if (head.nexts.isEmpty()) {
+                    ret = insert(head, elem,0, d);
+                } else {
+                    continue;
+                }
+            }
 
             if (ret) {
                 break;
@@ -106,8 +146,7 @@ class QQueue {
         }
     }
 
-    public boolean insert(Node cur, Node elem, int index) {
-        Desc d = elem.desc.get();
+    public boolean insert(Node cur, Node elem, int index, Desc d) {
         Desc curDesc = cur.desc.get();
 
         if (curDesc.active.get()) {
@@ -175,9 +214,13 @@ class QQueue {
                 tail.set(tIndex, prev);
             }
 
-            d.adr.value = cur.value;
-            d.active.set(false);
+            if (cur.op == PUSH) {
+                d.adr.value.set(cur.value);
+            } else {
+                cur.adr.value.set(d.value);
+            }
 
+            d.active.set(false);
             return true;
         }
 
