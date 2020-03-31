@@ -37,7 +37,7 @@ public class Benchmark {
         System.out.println("Each thread performs " + NUM_OPS + " operations" );
         for( int i = 1; i <= 32; i++ ){
             long total_duration = 0;
-            for( int k = 0; k < 10; k++ ){
+            for( int k = 0; k < 1; k++ ){
                 ArrayList<Thread> threads = new ArrayList<>();
                 //Create Threads
                 for( int j = 0; j < i; j++ ){
