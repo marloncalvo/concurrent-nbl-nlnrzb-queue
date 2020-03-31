@@ -15,16 +15,18 @@ public class Main {
         @Override
         public void run() {
             try {
-                MutableInt v = new MutableInt();
-                for (int i = 0; i < 10000; i++) {
-                    if (i < 5000) {
+                for (int i = 0; i < 100000; i++) {
+                    if (i < 90000) {
                         this.q.queue(i);
-                        System.out.println(Thread.currentThread().getName() + "- push():"+v.value);
+                        //System.out.println(Thread.currentThread().getName() + "- push():"+i);
+                    }
+                    else if(i == 90000) {
+                        System.out.println(Thread.currentThread().getName() + " - Done Queueing");
                     }
                     else {
-
+                        MutableInt v = new MutableInt();
                         this.q.dequeue(v);
-                        System.out.println(Thread.currentThread().getName() + "- pop():"+i);
+                        //System.out.println(Thread.currentThread().getName() + "- pop():"+i);
                     }
                 }
             } catch (Exception e) {
@@ -44,8 +46,13 @@ public class Main {
             threads.get(i).start();
         }
         for (int i = 0; i < N; i++) {
+            System.out.println("Waiting for " + threads.get(i).getName());
             threads.get(i).join();
+            System.out.println("Done -> " + threads.get(i).getName());
         }
 
+        MutableInt v = new MutableInt();
+        q.dequeue(v);
+        System.out.print(v.value);
     }
 }

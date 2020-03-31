@@ -43,6 +43,10 @@ class Node {
         this.prev = new AtomicReference<>(null);
         this.desc = new AtomicReference<>(new Desc(adr, op));
     }
+
+    public String toString() {
+        return String.format("{Op:%s, Value:%d}", op, value);
+    }
 }
 
 class Desc {
@@ -71,8 +75,12 @@ class Desc {
 }
 
 class QQueue {
+
+    private static final int FAIL_THRESHOLD = 5;
+
     private final Node head;
     private final Vector<Node> tail;
+    private final AtomicReference<Node> forkRequest;
 
     public QQueue() {
         this.head = new Node(HEAD);
@@ -80,6 +88,8 @@ class QQueue {
 
         tail = new Vector<>(100);
         tail.add(head);
+
+        forkRequest = new AtomicReference<>(null);
     }
 
     public void queue(int v) {
@@ -92,6 +102,10 @@ class QQueue {
 
             Desc d = new Desc(v, PUSH);
             elem.desc.set(d);
+
+            if(loops>3) {
+                //System.out.println("LOOP");
+            }
 
             try {
                 Node cur = tail.get(index);
@@ -107,6 +121,11 @@ class QQueue {
             }
 
             if (ret) {
+                break;
+            }
+
+            if (loops > FAIL_THRESHOLD && forkRequest.get() == null) {
+                forkRequest.compareAndSet(null, elem);
                 break;
             }
         }
@@ -143,6 +162,11 @@ class QQueue {
             if (ret) {
                 break;
             }
+
+            if (loops < -1 && forkRequest.get() == null) {
+                forkRequest.compareAndSet(null, elem);
+                break;
+            }
         }
     }
 
@@ -162,6 +186,19 @@ class QQueue {
                 elem.prev.set(cur);
                 cur.nexts.add(elem);
                 tail.set(index, elem);
+
+                Node helperNode = forkRequest.get();
+                if (helperNode != null && forkRequest.compareAndSet(helperNode, null)) {
+                    if (helperNode.op == cur.op) {
+                        helperNode.prev.set(cur);
+                        cur.nexts.add(helperNode);
+                        tail.add(helperNode);
+                        helperNode.desc.get().active.set(false);
+                        //System.out.println("ADD");
+                        //System.out.println(tail.size());
+                        //System.out.println(tail);
+                    }
+                }
 
                 d.active.set(false);
                 return true;
@@ -242,6 +279,10 @@ class QQueue {
     }
 
     public int getRandomTailIndex() {
-        return (int)(Math.random() * head.nexts.size());
+        int size = tail.size();
+        if (size > 1) {
+            //System.out.println(size);
+        }
+        return (int)(Math.random() * size);
     }
 }
