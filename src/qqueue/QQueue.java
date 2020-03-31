@@ -96,7 +96,7 @@ class QQueue {
         while (true) {
             loops++;
             int index = getRandomIndex();
-            Node cur = tail.get(index);
+            Node cur = head.nexts.get(index);
 
             ret = remove(cur, index, elem.desc.get());
 
@@ -115,6 +115,10 @@ class QQueue {
         }
 
         if(cur.desc.compareAndSet(curDesc, d)) {
+            if (tail.get(index) != cur) {
+                d.active.set(false);
+                return false;
+            }
             if (cur.nexts.isEmpty()) {
                 elem.prev.set(cur);
                 cur.nexts.add(elem);
@@ -125,6 +129,7 @@ class QQueue {
             }
         }
 
+        d.active.set(false);
         return false;
     }
 
@@ -139,6 +144,10 @@ class QQueue {
         // Take control of node cur.
         // a -> {b} -> c -> d
         if (cur.desc.compareAndSet(curDesc, d)) {
+            if (prev.nexts.get(index) != cur) {
+                d.active.set(false);
+                return false;
+            }
             while(true) {
                 // Take control of prev.
                 // {a} -> {b} -> c -> d
@@ -146,9 +155,13 @@ class QQueue {
                     //       {b} -> c -> d
                     // {a} <
                     //       c -> d
-                    prev.nexts.addAll(cur.nexts);
+                    for (Node node : cur.nexts) {
+                        node.prev.set(prev);
+                        prev.nexts.add(node);
+                    }
+
                     // {a} -> c -> d
-                    prev.nexts.set(index, null);
+                    prev.nexts.remove(index);
 
                     prev.desc.get().active.set(false);
                     break;
@@ -162,13 +175,13 @@ class QQueue {
                 tail.set(tIndex, prev);
             }
 
-            d.active.set(false);
-
             d.adr.value = cur.value;
+            d.active.set(false);
 
             return true;
         }
 
+        d.active.set(false);
         return false;
     }
 

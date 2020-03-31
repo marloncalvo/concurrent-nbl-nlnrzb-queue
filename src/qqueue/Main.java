@@ -14,20 +14,25 @@ public class Main {
 
         @Override
         public void run() {
-            for (int i = 0; i < 2; i++) {
-                if (i % 2== 0)
-                    this.q.queue(k);
-                else {
-                    System.out.println("TET");
-                    MutableInt v = new MutableInt();
-                    this.q.dequeue(v);
-                    System.out.println(v.value);
+            try {
+                for (int i = 0; i < 4; i++) {
+                    if (i % 2== 0) {
+                        this.q.queue(k);
+                        System.out.println(Thread.currentThread().getName() + "- push():"+k);
+                    }
+                    else {
+                        MutableInt v = new MutableInt();
+                        this.q.dequeue(v);
+                        System.out.println(Thread.currentThread().getName() + "- pop():"+v.value);
+                    }
                 }
+            } catch (Exception e) {
+
             }
         }
     }
 
-    private final static int N = 10;
+    private final static int N = 5;
     public static void main(String [] args) throws Exception {
         QQueue q = new QQueue();
         ArrayList<Thread> threads = new ArrayList<>();
