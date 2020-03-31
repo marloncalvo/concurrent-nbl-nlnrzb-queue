@@ -17,13 +17,14 @@ public class Main {
             try {
                 MutableInt v = new MutableInt();
                 for (int i = 0; i < 10000; i++) {
-                    if (i > 5000) {
+                    if (i < 5000) {
                         this.q.queue(i);
                         System.out.println(Thread.currentThread().getName() + "- push():"+v.value);
                     }
                     else {
+
                         this.q.dequeue(v);
-                        System.out.println(Thread.currentThread().getName() + "- pop():"+k);
+                        System.out.println(Thread.currentThread().getName() + "- pop():"+i);
                     }
                 }
             } catch (Exception e) {

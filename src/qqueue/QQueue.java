@@ -88,7 +88,7 @@ class QQueue {
         int loops = 0;
         while (true) {
             loops++;
-            int index = getRandomIndex();
+            int index = getRandomTailIndex();
 
             Desc d = new Desc(v, PUSH);
             elem.desc.set(d);
@@ -96,7 +96,7 @@ class QQueue {
             try {
                 Node cur = tail.get(index);
                 if (cur.op == POP) {
-                    index = getRandomIndex();
+                    index = getRandomHeadIndex();
                     cur   = head.nexts.get(index);
                     ret   = remove(cur, index, d);
                 } else {
@@ -118,7 +118,7 @@ class QQueue {
         int loops = 0;
         while (true) {
             loops++;
-            int index = getRandomIndex();
+            int index = getRandomHeadIndex();
 
             Desc d = new Desc(adr, POP);
             elem.desc.set(d);
@@ -128,7 +128,7 @@ class QQueue {
                 if (cur.op == PUSH) {
                     ret = remove(cur, index, d);
                 } else {
-                    index = getRandomIndex();
+                    index = getRandomTailIndex();
                     cur   = tail.get(index);
                     ret = insert(cur, elem, index, d);
                 }
@@ -228,7 +228,20 @@ class QQueue {
         return false;
     }
 
-    public int getRandomIndex() {
-        return 0;
+    public int getRandomHeadIndex() {
+        while(true) {
+            if (head.desc.get().active.compareAndSet(false, true)) {
+                int a = (int)(Math.random() * head.nexts.size());
+                if (a>0){
+                    //System.out.println(a);
+                }
+                head.desc.get().active.set(false);
+                return a;
+            }
+        }
+    }
+
+    public int getRandomTailIndex() {
+        return (int)(Math.random() * head.nexts.size());
     }
 }
