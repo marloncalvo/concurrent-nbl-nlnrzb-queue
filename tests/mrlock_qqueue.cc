@@ -38,7 +38,7 @@ public:
 /**
  * Runs all the preinitialized tests one by one, which optional debug statements.
  */
-void* _perform_test(QQueue<int> q, benchmark b) {
+void* _perform_test(QQueue<int> *q, benchmark b) {
 
     while(!b.tests.empty()) {
         test test = b.tests.back();
@@ -46,10 +46,10 @@ void* _perform_test(QQueue<int> q, benchmark b) {
 
         if (test.op == -1) {
             debug("Pop - " + std::to_string(test.val) + "\n");
-            q.pop(&test.val);
+            q->pop(&test.val);
         } else {
             debug("Push - " + std::to_string(test.val) + "\n");
-            q.push(test.val);
+            q->push(test.val);
         }
     }
 
@@ -84,7 +84,7 @@ std::pair<double, double> perform_test(int n_threads, int n_ops, int perc_push) 
     auto start = std::chrono::high_resolution_clock::now();
     
     for (int i = 0; i < n_threads; i++) {
-        threads[i] = std::thread(_perform_test, q, benchmarks[i]);
+        threads[i] = std::thread(_perform_test, &q, benchmarks[i]);
     }
 
     for (int i = 0; i < n_threads; i++) {
