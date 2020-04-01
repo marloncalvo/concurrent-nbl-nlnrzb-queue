@@ -100,6 +100,7 @@ class QQueue {
             loops++;
             int index = getRandomTailIndex();
 
+            //Desc d = elem.desc.get();
             Desc d = new Desc(v, PUSH);
             elem.desc.set(d);
 
@@ -139,6 +140,7 @@ class QQueue {
             loops++;
             int index = getRandomHeadIndex();
 
+            //Desc d = elem.desc.get();
             Desc d = new Desc(adr, POP);
             elem.desc.set(d);
 
@@ -153,7 +155,7 @@ class QQueue {
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 if (head.nexts.isEmpty()) {
-                    ret = insert(head, elem,0, d);
+                   ret = insert(head, elem,0, d);
                 } else {
                     continue;
                 }
@@ -163,7 +165,7 @@ class QQueue {
                 break;
             }
 
-            if (loops < -1 && forkRequest.get() == null) {
+            if (loops > FAIL_THRESHOLD && forkRequest.get() == null) {
                 forkRequest.compareAndSet(null, elem);
                 break;
             }
@@ -178,7 +180,12 @@ class QQueue {
         }
 
         if(cur.desc.compareAndSet(curDesc, d)) {
-            if (tail.get(index) != cur) {
+            try {
+                if (tail.get(index) != cur) {
+                    d.active.set(false);
+                    return false;
+                }
+            } catch (Exception e) {
                 d.active.set(false);
                 return false;
             }
@@ -211,7 +218,6 @@ class QQueue {
 
     public boolean remove(Node cur, int index, Desc d) {
         Desc curDesc = cur.desc.get();
-        Node prev = cur.prev.get();
 
         if (curDesc.active.get()) {
             return false;
@@ -220,14 +226,44 @@ class QQueue {
         // Take control of node cur.
         // a -> {b} -> c -> d
         if (cur.desc.compareAndSet(curDesc, d)) {
-            if (prev.nexts.get(index) != cur) {
+            try {
+                if (head.nexts.get(index) != cur) {
+                    //System.out.println("HERE2");
+                    d.active.set(false);
+                    return false;
+                }
+                if (!head.nexts.isEmpty()) {
+                   // System.out.println("HERE3");
+                    for (Node node : cur.nexts) {
+                        node.prev.set(head);
+                        head.nexts.add(node);
+                    }
+
+                    head.nexts.remove(cur);
+
+                    int tIndex = tail.indexOf(cur);
+                    if (tIndex != -1) {
+                        tail.set(tIndex, head);
+                    }
+
+                    if (cur.op == PUSH) {
+                        d.adr.value.set(cur.value);
+                    } else {
+                        cur.adr.value.set(d.value);
+                    }
+
+                    d.active.set(false);
+                    return true;
+                }
+            } catch (Exception e) {
                 d.active.set(false);
                 return false;
             }
-            while(true) {
+            /*
+            //while(true) {
                 // Take control of prev.
                 // {a} -> {b} -> c -> d
-                if (prev.desc.get().active.compareAndSet(false, true)) {
+                //if (prev.desc.get().active.compareAndSet(false, true)) {
                     //       {b} -> c -> d
                     // {a} <
                     //       c -> d
@@ -237,12 +273,12 @@ class QQueue {
                     }
 
                     // {a} -> c -> d
-                    prev.nexts.remove(index);
+                    prev.nexts.remove(cur);
 
-                    prev.desc.get().active.set(false);
-                    break;
-                }
-            }
+                    //prev.desc.get().active.set(false);
+                    //break;
+                //}
+            //}
 
             // Since no other thread can enter a, or b, they cant update its lists.
 
@@ -259,6 +295,7 @@ class QQueue {
 
             d.active.set(false);
             return true;
+            */
         }
 
         d.active.set(false);
@@ -266,16 +303,16 @@ class QQueue {
     }
 
     public int getRandomHeadIndex() {
-        while(true) {
-            if (head.desc.get().active.compareAndSet(false, true)) {
+        //while(true) {
+            //if (head.desc.get().active.compareAndSet(false, true)) {
                 int a = (int)(Math.random() * head.nexts.size());
-                if (a>0){
+                //if (a>0){
                     //System.out.println(a);
-                }
-                head.desc.get().active.set(false);
+                //}
+                //head.desc.get().active.set(false);
                 return a;
-            }
-        }
+            //}
+        //}
     }
 
     public int getRandomTailIndex() {

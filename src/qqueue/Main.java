@@ -15,12 +15,14 @@ public class Main {
         @Override
         public void run() {
             try {
-                for (int i = 0; i < 100000; i++) {
-                    if (i < 90000) {
+                final int max   = 100000;
+                final int split = (int)(max * 0.51);
+                for (int i = 0; i < max; i++) {
+                    if (i > split) {
                         this.q.queue(i);
                         //System.out.println(Thread.currentThread().getName() + "- push():"+i);
                     }
-                    else if(i == 90000) {
+                    else if (i == split) {
                         System.out.println(Thread.currentThread().getName() + " - Done Queueing");
                     }
                     else {
@@ -35,7 +37,7 @@ public class Main {
         }
     }
 
-    private final static int N = 32;
+    private final static int N = 16;
     public static void main(String [] args) throws Exception {
         QQueue q = new QQueue();
         ArrayList<Thread> threads = new ArrayList<>();
@@ -50,9 +52,5 @@ public class Main {
             threads.get(i).join();
             System.out.println("Done -> " + threads.get(i).getName());
         }
-
-        MutableInt v = new MutableInt();
-        q.dequeue(v);
-        System.out.print(v.value);
     }
 }
