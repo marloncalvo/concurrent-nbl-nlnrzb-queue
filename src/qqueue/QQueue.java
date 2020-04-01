@@ -50,13 +50,16 @@ class Node {
 }
 
 class Desc {
+
+    private static final int INVALID = -22222;
+
     final int value;
     final MutableInt adr;
     final Op op;
     final AtomicBoolean active;
 
     public Desc(MutableInt adr, Op op) {
-        this.value = -2222;
+        this.value = INVALID;
         this.adr = adr;
         this.op = op;
         active = new AtomicBoolean(true);
@@ -135,7 +138,6 @@ class QQueue {
             loops++;
             int index = getRandomHeadIndex();
 
-            //Desc d = elem.desc.get();
             Desc d = new Desc(adr, POP);
             elem.desc.set(d);
 
