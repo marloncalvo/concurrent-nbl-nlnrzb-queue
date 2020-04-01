@@ -77,7 +77,7 @@ class Desc {
     }
 }
 
-class QQueue {
+public class QQueue {
 
     private static final int FAIL_THRESHOLD = 5;
 
@@ -111,7 +111,9 @@ class QQueue {
                 if (cur.op == POP) {
                     index = getRandomHeadIndex();
                     cur   = head.nexts.get(index);
-                    ret   = remove(cur, index, d);
+                    if (cur.op == POP) {
+                        ret   = remove(cur, index, d);
+                    }
                 } else {
                     ret = insert(cur, elem, index, d);
                 }
