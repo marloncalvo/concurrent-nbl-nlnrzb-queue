@@ -1,3 +1,4 @@
+
 /**
  * Below you will find the implementation for the MRLock QQueue.
  * The class defines all the methods we support, and the implementation is there as well.
@@ -36,7 +37,7 @@ public:
 template<typename T>
 class Node {
 public:
-	Node<T> *prev;
+	std::atomic<Node<T>*> prev;
 	Node<T> *nexts[MAX_CHILD];
 	int op;
 	T val;
@@ -46,10 +47,10 @@ public:
 template<typename T>
 class QQueue {
 private:
-	Node<T> *head;
-	Node<T> *tail;
+	std::atomic<Node<T>*> head;
+	std::atomic<Node<T>*> tail;
 	MRLock<Bitset> *mrlock;
-	
+
 	Node<T>* remove(Node<T> *cur);
 	void insert(Node<T> *tail, Node<T> *elem);
 
@@ -80,16 +81,18 @@ void QQueue<T>::push(T val) {
 
 	// Check if tail contains a unfinished POP. If so, finish it.
 	// Else just insert.
+	Node<T> * tail = this->tail;
 	if(tail->op != POP) {
 		Node<T> *node = new Node<T>();
 		node->op = PUSH;
 		node->val = val;
 		insert(tail, node);
 	} else {
+		Node<T> * head = this->head;
 		Node<T> *elem = remove(head);
 		*(elem->desc->adr) = val;
 		if(head->nexts[0] == NULL) {
-			tail = head;
+			this->tail = head;
 		}
 	}
 
@@ -112,6 +115,8 @@ void QQueue<T>::pop(T *adr) {
 	// We need to check if it's an invalid pop first.
 	// If it is, we create a new Node with a descriptor, and insert
 	// into queue. Else, we just pop like normal.
+	Node<T> * head = this->head;
+	Node<T> * tail = this->tail;
 	if (head == tail || tail->op != PUSH) {
 		Node<T> *node = new Node<T>();
 		Descriptor<T> *desc = new Descriptor<T>();
@@ -121,7 +126,7 @@ void QQueue<T>::pop(T *adr) {
 
 		node->op = POP;
 		node->desc = desc;
-		
+
 		insert(tail, node);
 
 	// Just pop and go.
@@ -129,7 +134,7 @@ void QQueue<T>::pop(T *adr) {
 		Node<T> *elem = remove(head);
 		*adr = elem->val;
 		if(head->nexts[0] == NULL) {
-			tail = head;
+			this->tail = head;
 		}
 	}
 
@@ -169,6 +174,6 @@ Node<T>* QQueue<T>::remove(Node<T> *cur) {
 template<typename T>
 QQueue<T>::QQueue() {
 	head = new Node<T>();
-	tail = head;
+	tail = head.load();
 	mrlock = new MRLock<Bitset>(100); // 100 is good enough for this.
 }
