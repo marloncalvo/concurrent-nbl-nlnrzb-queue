@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <chrono>
 #include <stdio.h>
 #include <pthread.h>
 #include "mrlock_qqueue.h"
 
-#define N 10000000
-#define N_T 4
+#define N 10000
+//#define N_T 4
 
 #define DEBUG 0
 
@@ -69,34 +70,42 @@ void print() {
 
 int main(void) {
 
-    srand( (unsigned)time(NULL) );
+    for( int N_T = 1; N_T <= 32; N_T++ ){
+        srand( (unsigned)time(NULL) );
     
-	pthread_t threads[N_T];
-    benchmark benchmarks[N_T];
+	    pthread_t threads[N_T];
+        benchmark benchmarks[N_T];
 
-    /**
-     * This generates all the tests
-     */
-    for (int i = 0; i < N; i++) {
-        test t;
-        if((rand() % 100) < 50) {
-            t.op = -1;
-            t.val = i;
-        } else {
-            t.op = 1;
-            t.val = rand() * 100000 + 1;
+        /**
+         * This generates all the tests
+         */
+        for (int i = 0; i < N; i++) {
+            test t;
+            if((rand() % 100) < 50) {
+                t.op = -1;
+                t.val = i;
+            } else {
+                t.op = 1;
+                t.val = rand() * 100000 + 1;
+            }
+
+            benchmarks[i%N_T].tests.push_back(t);
         }
 
-        benchmarks[i%N_T].tests.push_back(t);
-    }
+        auto start = std::chrono::high_resolution_clock::now();
 
-    clock_t begin_time = clock();
-    for (int i = 0; i < N_T; i++) {
-        pthread_create(&threads[i], NULL, foo, (void*)&benchmarks[i]);
-    }
+        for (int i = 0; i < N_T; i++) {
+            pthread_create(&threads[i], NULL, foo, (void*)&benchmarks[i]);
+        }
 
-    for (int i = 0; i < N_T; i++) {
-        pthread_join(threads[i], NULL);
+        for (int i = 0; i < N_T; i++) {
+            pthread_join(threads[i], NULL);
+        }
+
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        std::cout << N_T << " Threads took " << (float) (N * N_T) / std::chrono::duration_cast<std::chrono::milliseconds>( stop - start ).count() << " ops / milliseconds\n"; 
+
     }
 
 /*
