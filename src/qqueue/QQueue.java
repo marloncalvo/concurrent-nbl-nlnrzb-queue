@@ -259,10 +259,6 @@ class QQueue {
     }
 
     public int getRandomTailIndex() {
-        int size = tail.size();
-        if (size > 1) {
-            //System.out.println(size);
-        }
-        return (int)(Math.random() * size);
+        return (int)(Math.random() * tail.size());
     }
 }
