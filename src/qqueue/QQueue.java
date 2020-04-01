@@ -100,13 +100,8 @@ class QQueue {
             loops++;
             int index = getRandomTailIndex();
 
-            //Desc d = elem.desc.get();
             Desc d = new Desc(v, PUSH);
             elem.desc.set(d);
-
-            if(loops>3) {
-                //System.out.println("LOOP");
-            }
 
             try {
                 Node cur = tail.get(index);
@@ -201,9 +196,6 @@ class QQueue {
                         cur.nexts.add(helperNode);
                         tail.add(helperNode);
                         helperNode.desc.get().active.set(false);
-                        //System.out.println("ADD");
-                        //System.out.println(tail.size());
-                        //System.out.println(tail);
                     }
                 }
 
@@ -223,79 +215,39 @@ class QQueue {
             return false;
         }
 
-        // Take control of node cur.
-        // a -> {b} -> c -> d
         if (cur.desc.compareAndSet(curDesc, d)) {
             try {
                 if (head.nexts.get(index) != cur) {
-                    //System.out.println("HERE2");
                     d.active.set(false);
                     return false;
                 }
-                if (!head.nexts.isEmpty()) {
-                   // System.out.println("HERE3");
-                    for (Node node : cur.nexts) {
-                        node.prev.set(head);
-                        head.nexts.add(node);
-                    }
-
-                    head.nexts.remove(cur);
-
-                    int tIndex = tail.indexOf(cur);
-                    if (tIndex != -1) {
-                        tail.set(tIndex, head);
-                    }
-
-                    if (cur.op == PUSH) {
-                        d.adr.value.set(cur.value);
-                    } else {
-                        cur.adr.value.set(d.value);
-                    }
-
-                    d.active.set(false);
-                    return true;
-                }
-            } catch (Exception e) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 d.active.set(false);
                 return false;
             }
-            /*
-            //while(true) {
-                // Take control of prev.
-                // {a} -> {b} -> c -> d
-                //if (prev.desc.get().active.compareAndSet(false, true)) {
-                    //       {b} -> c -> d
-                    // {a} <
-                    //       c -> d
-                    for (Node node : cur.nexts) {
-                        node.prev.set(prev);
-                        prev.nexts.add(node);
-                    }
 
-                    // {a} -> c -> d
-                    prev.nexts.remove(cur);
+            if (!head.nexts.isEmpty()) {
+                for (Node node : cur.nexts) {
+                    node.prev.set(head);
+                    head.nexts.add(node);
+                }
 
-                    //prev.desc.get().active.set(false);
-                    //break;
-                //}
-            //}
+                head.nexts.remove(cur);
 
-            // Since no other thread can enter a, or b, they cant update its lists.
+                int tIndex = tail.indexOf(cur);
+                if (tIndex != -1) {
+                    tail.set(tIndex, head);
+                }
 
-            int tIndex = tail.indexOf(cur);
-            if (tIndex != -1) {
-                tail.set(tIndex, prev);
+                if (cur.op == PUSH) {
+                    d.adr.value.set(cur.value);
+                } else {
+                    cur.adr.value.set(d.value);
+                }
+
+                d.active.set(false);
+                return true;
             }
-
-            if (cur.op == PUSH) {
-                d.adr.value.set(cur.value);
-            } else {
-                cur.adr.value.set(d.value);
-            }
-
-            d.active.set(false);
-            return true;
-            */
         }
 
         d.active.set(false);
@@ -303,16 +255,7 @@ class QQueue {
     }
 
     public int getRandomHeadIndex() {
-        //while(true) {
-            //if (head.desc.get().active.compareAndSet(false, true)) {
-                int a = (int)(Math.random() * head.nexts.size());
-                //if (a>0){
-                    //System.out.println(a);
-                //}
-                //head.desc.get().active.set(false);
-                return a;
-            //}
-        //}
+        return (int)(Math.random() * head.nexts.size());
     }
 
     public int getRandomTailIndex() {
