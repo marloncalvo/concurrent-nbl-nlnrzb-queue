@@ -136,7 +136,7 @@ public class QQueueTest {
 
         for (int i = 1; i <= MAX_N_THREADS; i++) {
             Pair<Double, Double> results = performTest(i, N_OPS);
-            //System.out.println(String.format("Results for %d threads:\n\tTotal Time: %f\n\tOp/s: %f\n\t", i, results.getHead(), results.getTail()));
+            System.out.println(String.format("Results for %d threads:\n\tTotal Time: %f\n\tOp/s: %f\n\t", i, results.getHead(), results.getTail()));
 
             writer.println(String.format("%d,%d,%.6f,%.2f", i, N_OPS, results.getHead(), results.getTail()));
         }
