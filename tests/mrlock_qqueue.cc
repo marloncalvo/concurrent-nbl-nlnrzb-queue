@@ -110,7 +110,7 @@ int main(void) {
 
     int N_THREADS = 32;
     int N_OPS     = 1000;
-    int p_push    = 60;
+    int p_push    = 100;
 
     for (int i = 1; i <= N_THREADS; i++) {
         std::pair<double, double> results = perform_test(i, N_OPS, p_push);

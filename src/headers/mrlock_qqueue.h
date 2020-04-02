@@ -37,6 +37,13 @@ public:
 template<typename T>
 class Node {
 public:
+	~Node() {
+		for (int i = 0; i < MAX_CHILD; i++) {
+			free(nexts[i]);
+		}
+		free(nexts);
+		free(desc);
+	}
 	std::atomic<Node<T>*> prev;
 	Node<T> *nexts[MAX_CHILD];
 	int op;
@@ -56,6 +63,7 @@ private:
 
 public:
 	QQueue();
+	~QQueue();
 	void push(T val);
 	void pop(T *adr);
 };
@@ -97,6 +105,7 @@ void QQueue<T>::push(T val) {
 	}
 
 	mrlock->Unlock(pos);
+	delete res;
 }
 
 template<typename T>
@@ -139,6 +148,7 @@ void QQueue<T>::pop(T *adr) {
 	}
 
 	mrlock->Unlock(pos);
+	delete res;
 }
 
 /*
@@ -176,4 +186,9 @@ QQueue<T>::QQueue() {
 	head = new Node<T>();
 	tail = head.load();
 	mrlock = new MRLock<Bitset>(100); // 100 is good enough for this.
+}
+
+template<typename T>
+QQueue<T>::~QQueue() {
+	free(head.load());
 }
