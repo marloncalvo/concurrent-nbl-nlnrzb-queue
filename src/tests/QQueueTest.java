@@ -128,7 +128,7 @@ public class QQueueTest {
     }
 
     public static final int MAX_N_THREADS = 32;
-    public static final int N_OPS = 10000;
+    public static final int N_OPS = 1000;
 
     public static void main(String [] args) throws Exception {
         PrintWriter writer = new PrintWriter(new File("qqueue_results.csv"));
