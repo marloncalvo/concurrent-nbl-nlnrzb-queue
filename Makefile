@@ -7,11 +7,15 @@ TARGET = mrlock_qqueue.cc
 
 all: clean mrlock_qqueue qqueue
 
-mrlock_qqueue: clean
-	$(CXX) -pthread -I $(HEADERS) -g tests/mrlock_qqueue.cc -o mrlock_test
+naive_qqueue: clean
+	$(CXX) -O3 -Wall -pthread -I $(HEADERS) -g src/tests/naive_qqueue.cc -o naive_test
 
-qqueue: clean
-	javac src/qqueue/*.java
+mrlock_qqueue: clean
+	$(CXX) -O3 -Wall -pthread -I $(HEADERS) -g src/tests/mrlock_qqueue.cc -o mrlock_test
+
+qqueue:
+	javac src/**/*.java
 
 clean:
 	$(RM) $(TARGET)
+	$(RM) src/**/*.class
