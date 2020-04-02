@@ -1,4 +1,3 @@
 package qqueue;
 
-public enum Op { HEAD, POP, PUSH
-}
+public enum Op { HEAD, Queue, Deque}
