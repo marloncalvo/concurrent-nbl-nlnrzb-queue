@@ -1,10 +1,13 @@
 # File Structure
-Under `src/headers`, you can find the implementations for each of the data structures.
-Under `tests/`, you can find the test for each implementation.
+Under `src/`, you can find the implementations for each of the data structures.
+Under `src/tests/`, you can find the test for each implementation.  
+We have two source languages for our implementations, where we utilize C++ for `naive_qqueue` and `mrlock_qqueue`, 
+and `Java 11` for `qqueue` (the full implementation).  
+All the implementations in C++ can be found under `src/headers`, and Java can be found in `src/qqueue`. 
 
 # Environment
 This was built, and tested, on `gcc (GCC) 9.2.1 20190827 (Red Hat 9.2.1-1)` in Fedora 31.
-Should not require any special headers.
+Should not require any special headers. Furthermore, `Java 11` was utilized for `qqueue`.
 
 # Running
 In this project, there are three implementatinos of the QQueue.
